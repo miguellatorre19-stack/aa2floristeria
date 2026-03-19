@@ -1,0 +1,23 @@
+{
+  "name": "floristeria",
+  "version": "1.0.0",
+  "description": "app de una floristería",
+  "keywords": [
+    "api"
+  ],
+  "homepage": "https://github.com/miguellatorre19-stack/aa2floristeria#readme",
+  "bugs": {
+    "url": "https://github.com/miguellatorre19-stack/aa2floristeria/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miguellatorre19-stack/aa2floristeria.git"
+  },
+  "license": "ISC",
+  "author": "miguel latorre",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
