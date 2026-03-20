@@ -84,3 +84,107 @@ app.delete('/clientes/:id', async (req, res) => {
   }
 });
 
+
+app.get('/clientes/:id/pedidos', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const pedidos = await db('pedidos').select('*').where({ cliente_id: id });
+    res.status(200).json(pedidos);
+  } catch (error) {
+    console.error('Error al obtener pedidos:', error);
+    res.status(500).json({ error: 'Error al obtener pedidos' });
+  }
+});
+
+app.get('/clientes/:id/pedidos/:pedidoId', async (req, res) => {
+  const { id, pedidoId } = req.params;
+  try {
+    const pedido = await db('pedidos')
+      .select('*')
+      .where({ id: pedidoId, cliente_id: id })
+      .first();
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    res.status(200).json(pedido);
+  } catch (error) {
+    console.error('Error al obtener pedido:', error);
+    res.status(500).json({ error: 'Error al obtener pedido' });
+  }
+});
+
+app.post('/clientes/:id/pedidos', async (req, res) => {
+  const { id } = req.params;
+  const { descripcion, tipo_flores, cantidad_flores, especificaciones } = req.body;
+  try {
+    const cliente = await db('clientes').select('*').where({ id }).first();
+    if (!cliente) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+
+    const [pedidoId] = await db('pedidos').insert({
+      cliente_id: id,
+      descripcion,
+      tipo_flores,
+      cantidad_flores,
+      especificaciones
+    });
+
+    res.status(201).json({
+      id: pedidoId,
+      cliente_id: Number(id),
+      descripcion,
+      tipo_flores,
+      cantidad_flores,
+      especificaciones
+    });
+  } catch (error) {
+    console.error('Error al crear pedido:', error);
+    res.status(500).json({ error: 'Error al crear pedido' });
+  }
+});
+
+app.put('/clientes/:id/pedidos/:pedidoId', async (req, res) => {
+  const { id, pedidoId } = req.params;
+  const { descripcion, tipo_flores, cantidad_flores, especificaciones } = req.body;
+  try {
+    const updated = await db('pedidos')
+      .where({ id: pedidoId, cliente_id: id })
+      .update({ descripcion, tipo_flores, cantidad_flores, especificaciones });
+
+    if (!updated) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    res.status(200).json({
+      id: Number(pedidoId),
+      cliente_id: Number(id),
+      descripcion,
+      tipo_flores,
+      cantidad_flores,
+      especificaciones
+    });
+  } catch (error) {
+    console.error('Error al actualizar pedido:', error);
+    res.status(500).json({ error: 'Error al actualizar pedido' });
+  }
+});
+
+app.delete('/clientes/:id/pedidos/:pedidoId', async (req, res) => {
+  const { id, pedidoId } = req.params;
+  try {
+    const deleted = await db('pedidos').where({ id: pedidoId, cliente_id: id }).del();
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    res.status(200).json({ message: 'Pedido eliminado' });
+  } catch (error) {
+    console.error('Error al eliminar pedido:', error);
+    res.status(500).json({ error: 'Error al eliminar pedido' });
+  }
+});
+
