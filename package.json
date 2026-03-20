@@ -5,6 +5,10 @@
   "keywords": [
     "api"
   ],
+  "scripts": {
+    "start": "node backend/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "homepage": "https://github.com/miguellatorre19-stack/aa2floristeria#readme",
   "bugs": {
     "url": "https://github.com/miguellatorre19-stack/aa2floristeria/issues"
@@ -17,7 +21,13 @@
   "author": "miguel latorre",
   "type": "commonjs",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "knex": "3.1.0",
+    "mysql2": "^3.3.0",
+    "nodemon": "^3.1.14",
+    "sqlite3": "6.0.1"
   }
 }
