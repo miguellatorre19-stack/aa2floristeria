@@ -1,0 +1,31 @@
+.app {
+  padding: 24px;
+  font-family: sans-serif;
+}
+
+.controls,
+.inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+button,
+input {
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.response {
+  min-height: 120px;
+  padding: 12px;
+  background: #f3f3f3;
+  border: 1px solid #ccc;
+  overflow: auto;
+  text-align: left;
+}
+
+.clientList {
+  text-align: left;
+}
