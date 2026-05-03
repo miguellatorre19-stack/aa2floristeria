@@ -1,14 +1,35 @@
-Desde carpeta de proyecto:
+# Floristeria
 
-- Crear la base de datos
-  node -e "const sqlite3=require('sqlite3').verbose(); const db=new sqlite3.Database('backend/floristeria.db'); db.serialize(()=>{db.run('CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, dni TEXT, nombre TEXT, apellidos TEXT, domicilio TEXT, telf TEXT)'); db.run('CREATE TABLE IF NOT EXISTS pedidos (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER, descripcion TEXT, tipo_flores TEXT, cantidad_flores INTEGER, especificaciones TEXT, FOREIGN KEY(cliente_id) REFERENCES clientes(id))');}); db.close();"
+Proyecto web para gestionar una floristeria.
 
-- Iniciar backend: npm.cmd start
-  localhost:3000/clientes
+El modelo de datos tiene dos entidades principales:
 
-- Iniciar frontend: en otra terminal
-  npm.cmd run dev
+- Clientes: usuarios de la aplicacion que pueden realizar pedidos.
+- Pedidos: pedidos asociados a un cliente concreto.
+
+Ambas entidades tienen un CRUD basico completo. El backend esta desarrollado con Node.js, Express, Knex y SQLite. El frontend esta desarrollado con React + Vite y se comunica con la API REST del backend.
+
+La aplicacion usa SQLite. La base de datos se encuentra en:
+
+backend/floristeria.db
+
+## Iniciar backend
+
+Desde la carpeta del proyecto:
+
+npm install
+npm start
+
+API:
+http://localhost:3000/clientes
 
 
-  
-  
+## Iniciar frontend
+
+cd frontend/floristeria
+npm install
+npm run dev
+
+Aplicacion:
+http://localhost:5173/
+

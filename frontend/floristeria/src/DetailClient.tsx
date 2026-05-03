@@ -26,17 +26,19 @@ type DetailClientProps = {
 }
 
 const API_URL = 'http://localhost:3000/clientes'
+const emptyForm = {
+  descripcion: '',
+  tipo_flores: '',
+  cantidad_flores: '',
+  especificaciones: '',
+}
 
 export default function DetailClient({ clientId, onBack }: DetailClientProps) {
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [message, setMessage] = useState('')
-  const [formData, setFormData] = useState({
-    descripcion: '',
-    tipo_flores: '',
-    cantidad_flores: '',
-    especificaciones: '',
-  })
+  const [editingPedidoId, setEditingPedidoId] = useState<number | null>(null)
+  const [formData, setFormData] = useState(emptyForm)
 
   const pedidosUrl = `${API_URL}/${clientId}/pedidos`
 
@@ -58,8 +60,12 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
     setPedidos(pedidosResponse.data)
   }
 
-  const createPedido = async (event: ChangeEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const resetForm = () => {
+    setEditingPedidoId(null)
+    setFormData(emptyForm)
+  }
+
+  const createPedido = async () => {
     const response = await axios.post(pedidosUrl, {
       ...formData,
       cantidad_flores: Number(formData.cantidad_flores),
@@ -67,16 +73,59 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
 
     setPedidos([...pedidos, response.data])
     setMessage(`Pedido creado con id ${response.data.id}`)
-    setFormData({
-      descripcion: '',
-      tipo_flores: '',
-      cantidad_flores: '',
-      especificaciones: '',
+    resetForm()
+  }
+
+  const updatePedido = async () => {
+    if (!editingPedidoId) return
+
+    const response = await axios.put(`${pedidosUrl}/${editingPedidoId}`, {
+      ...formData,
+      cantidad_flores: Number(formData.cantidad_flores),
     })
+
+    setPedidos(pedidos.map((pedido) => (
+      pedido.id === editingPedidoId ? response.data : pedido
+    )))
+    setMessage(`Pedido ${editingPedidoId} actualizado`)
+    resetForm()
+  }
+
+  const savePedido = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (editingPedidoId) {
+      await updatePedido()
+      return
+    }
+
+    await createPedido()
+  }
+
+  const selectPedido = (pedido: Pedido) => {
+    setEditingPedidoId(pedido.id)
+    setFormData({
+      descripcion: pedido.descripcion,
+      tipo_flores: pedido.tipo_flores,
+      cantidad_flores: String(pedido.cantidad_flores),
+      especificaciones: pedido.especificaciones || '',
+    })
+    setMessage(`Editando pedido ${pedido.id}`)
+  }
+
+  const deletePedido = async (pedidoId: number) => {
+    await axios.delete(`${pedidosUrl}/${pedidoId}`)
+    setPedidos(pedidos.filter((pedido) => pedido.id !== pedidoId))
+    setMessage(`Pedido ${pedidoId} eliminado`)
+
+    if (editingPedidoId === pedidoId) {
+      resetForm()
+    }
   }
 
   useEffect(() => {
     setMessage('')
+    resetForm()
     loadDetail().catch(() => setMessage('No se pudo cargar el cliente o sus pedidos.'))
   }, [clientId])
 
@@ -89,7 +138,7 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
       <header className="pageHeader">
         <h1>Pedidos</h1>
         {cliente ? (
-          <p>{cliente.nombre} {cliente.apellidos} · Cliente #{cliente.id}</p>
+          <p>{cliente.nombre} {cliente.apellidos} - Cliente #{cliente.id}</p>
         ) : (
           <p>Cargando cliente...</p>
         )}
@@ -116,11 +165,11 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
 
       <section className="clientPanel">
         <div className="sectionHeader">
-          <h2>Nuevo pedido</h2>
+          <h2>{editingPedidoId ? `Editar pedido #${editingPedidoId}` : 'Nuevo pedido'}</h2>
           <span>{pedidos.length} pedidos</span>
         </div>
 
-        <form className="pedidoForm" onSubmit={createPedido}>
+        <form className="pedidoForm" onSubmit={savePedido}>
           <label>
             Descripcion
             <input
@@ -162,8 +211,13 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
             />
           </label>
           <button type="submit" className="primaryButton wideField">
-            Crear pedido
+            {editingPedidoId ? 'Guardar cambios' : 'Crear pedido'}
           </button>
+          {editingPedidoId && (
+            <button type="button" className="secondaryButton wideField" onClick={resetForm}>
+              Cancelar edicion
+            </button>
+          )}
         </form>
 
         {message && <p className="formMessage">{message}</p>}
@@ -188,6 +242,22 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
                 <span>{pedido.tipo_flores}</span>
                 <span>{pedido.cantidad_flores} flores</span>
                 <p>{pedido.especificaciones || 'Sin especificaciones'}</p>
+                <div className="pedidoActions">
+                  <button
+                    type="button"
+                    className="secondaryButton"
+                    onClick={() => selectPedido(pedido)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    className="dangerButton"
+                    onClick={() => deletePedido(pedido.id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </article>
             ))
           )}
