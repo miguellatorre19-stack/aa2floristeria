@@ -33,6 +33,19 @@ const emptyForm = {
   especificaciones: '',
 }
 
+const formatError = (error: unknown) => {
+  if (!axios.isAxiosError(error) || !error.response) {
+    return 'No se pudo conectar con el servidor'
+  }
+
+  const errores = error.response.data?.errores
+  if (Array.isArray(errores)) {
+    return errores.map((errorItem) => errorItem.msg).join('\n')
+  }
+
+  return JSON.stringify(error.response.data, null, 2)
+}
+
 export default function DetailClient({ clientId, onBack }: DetailClientProps) {
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
@@ -66,29 +79,37 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
   }
 
   const createPedido = async () => {
-    const response = await axios.post(pedidosUrl, {
-      ...formData,
-      cantidad_flores: Number(formData.cantidad_flores),
-    })
+    try {
+      const response = await axios.post(pedidosUrl, {
+        ...formData,
+        cantidad_flores: Number(formData.cantidad_flores),
+      })
 
-    setPedidos([...pedidos, response.data])
-    setMessage(`Pedido creado con id ${response.data.id}`)
-    resetForm()
+      setPedidos([...pedidos, response.data])
+      setMessage(`Pedido creado con id ${response.data.id}`)
+      resetForm()
+    } catch (error) {
+      setMessage(formatError(error))
+    }
   }
 
   const updatePedido = async () => {
     if (!editingPedidoId) return
 
-    const response = await axios.put(`${pedidosUrl}/${editingPedidoId}`, {
-      ...formData,
-      cantidad_flores: Number(formData.cantidad_flores),
-    })
+    try {
+      const response = await axios.put(`${pedidosUrl}/${editingPedidoId}`, {
+        ...formData,
+        cantidad_flores: Number(formData.cantidad_flores),
+      })
 
-    setPedidos(pedidos.map((pedido) => (
-      pedido.id === editingPedidoId ? response.data : pedido
-    )))
-    setMessage(`Pedido ${editingPedidoId} actualizado`)
-    resetForm()
+      setPedidos(pedidos.map((pedido) => (
+        pedido.id === editingPedidoId ? response.data : pedido
+      )))
+      setMessage(`Pedido ${editingPedidoId} actualizado`)
+      resetForm()
+    } catch (error) {
+      setMessage(formatError(error))
+    }
   }
 
   const savePedido = async (event: FormEvent<HTMLFormElement>) => {
@@ -177,7 +198,6 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
               name="descripcion"
               value={formData.descripcion}
               onChange={updateField}
-              required
             />
           </label>
           <label>
@@ -187,7 +207,6 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
               name="tipo_flores"
               value={formData.tipo_flores}
               onChange={updateField}
-              required
             />
           </label>
           <label>
@@ -195,10 +214,8 @@ export default function DetailClient({ clientId, onBack }: DetailClientProps) {
             <input
               type="number"
               name="cantidad_flores"
-              min="1"
               value={formData.cantidad_flores}
               onChange={updateField}
-              required
             />
           </label>
           <label className="wideField">

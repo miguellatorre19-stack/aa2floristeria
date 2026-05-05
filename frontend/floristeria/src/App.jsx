@@ -5,6 +5,21 @@ import './App.css'
 
 const API_URL = 'http://localhost:3000/clientes'
 
+const formatError = (error) => {
+  const response = error.response
+
+  if (!response) {
+    return 'No se pudo conectar con el servidor'
+  }
+
+  const errores = response.data?.errores
+  if (Array.isArray(errores)) {
+    return `${response.status} ${response.statusText}\n${errores.map((errorItem) => errorItem.msg).join('\n')}`
+  }
+
+  return `${response.status} ${response.statusText}\n${JSON.stringify(response.data, null, 2)}`
+}
+
 function App() {
   const [path, setPath] = useState(window.location.pathname)
   const [clients, setClients] = useState([])
@@ -36,17 +51,27 @@ function App() {
   }
 
   const postClient = async () => {
-    const response = await axios.post(API_URL, formData)
-    const data = response.data
-    setResponseText(`${response.status} ${response.statusText}\n${JSON.stringify(data, null, 2)}`)
-    setResponseData(data)
+    try {
+      const response = await axios.post(API_URL, formData)
+      const data = response.data
+      setResponseText(`${response.status} ${response.statusText}\n${JSON.stringify(data, null, 2)}`)
+      setResponseData(data)
+    } catch (error) {
+      setResponseData(null)
+      setResponseText(formatError(error))
+    }
   }
 
   const putClient = async () => {
-    const response = await axios.put(`${API_URL}/${clientId}`, formData)
-    const data = response.data
-    setResponseText(`${response.status} ${response.statusText}\n${JSON.stringify(data, null, 2)}`)
-    setResponseData(data)
+    try {
+      const response = await axios.put(`${API_URL}/${clientId}`, formData)
+      const data = response.data
+      setResponseText(`${response.status} ${response.statusText}\n${JSON.stringify(data, null, 2)}`)
+      setResponseData(data)
+    } catch (error) {
+      setResponseData(null)
+      setResponseText(formatError(error))
+    }
   }
 
   const deleteClient = async () => {
